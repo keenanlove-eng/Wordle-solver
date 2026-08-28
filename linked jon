@@ -1,0 +1,192 @@
+import org.atpfivt.ljv.LJV;
+
+public class LinkedListAP<T>{
+    private Node<T> begin;
+    private Node<T> end;
+    private int length;
+
+
+    public LinkedListAP(){
+        begin = null;
+        length = 0;
+    }
+
+    public boolean add(T item) {
+        Node<T> newNode = new Node<T>(item);
+
+        if (begin == null) {
+            begin = newNode;
+            end = newNode;
+        } else {
+            end.setNext(newNode);
+            end = newNode;
+        }
+
+        length++;
+        return true;
+    }
+
+    public T get(int index) {
+        checkIndex(index);
+
+        Node<T> temp = begin;
+
+        for (int i = 0; i < index; i++) {
+            temp = temp.getNext();
+        }
+
+        return temp.getItem();
+    }
+
+    public T set(int index, T obj) {
+        checkIndex(index);
+
+        Node<T> temp = begin;
+
+        for (int i = 0; i < index; i++) {
+            temp = temp.getNext();
+        }
+
+        return temp.setItem(obj);
+    }
+
+    public void add(int index, T obj) {
+        if (index < 0 || index > length) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (index == length) {
+            add(obj);
+            return;
+        }
+
+        Node<T> newNode = new Node<T>(obj);
+
+        if (index == 0) {
+            newNode.setNext(begin);
+            begin = newNode;
+        } else {
+            Node<T> temp = begin;
+
+            for (int i = 0; i < index - 1; i++) {
+                temp = temp.getNext();
+            }
+
+            newNode.setNext(temp.getNext());
+            temp.setNext(newNode);
+        }
+
+        length++;
+    }
+
+    public T remove(int index) {
+        checkIndex(index);
+
+        T removedItem;
+
+        if (index == 0) {
+            removedItem = begin.getItem();
+            begin = begin.getNext();
+            length--;
+
+            if (length == 0) {
+                end = null;
+            }
+
+            return removedItem;
+        }
+
+        Node<T> temp = begin;
+
+        for (int i = 0; i < index - 1; i++) {
+            temp = temp.getNext();
+        }
+
+        Node<T> removedNode = temp.getNext();
+        removedItem = removedNode.getItem();
+
+        temp.setNext(removedNode.getNext());
+
+        if (index == length - 1) {
+            end = temp;
+        }
+
+        length--;
+
+        return removedItem;
+    }
+
+    public int size() {
+        return length;
+    }
+
+    private void checkIndex(int index) {
+        if (index < 0 || index >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    public String toString() {
+        String ans = new String();
+        Node<T> temp = begin;
+
+        for (int i = 0; i < length; i++){
+            ans += temp.getItem().toString() + ", ";
+            temp = temp.getNext();
+        }
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        LinkedListAP<String> animals = new LinkedListAP<>();
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.add("dog");
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.add("cat");
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.add("pig");
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.set(2, "edelnut");
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.add(2, "jhiznit");
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        animals.remove(3);
+
+        DisplayDS.browse(
+            new LJV().setTreatAsPrimitive(String.class),
+            animals
+        );
+
+        System.out.println(animals.toString());
+    }
+}
