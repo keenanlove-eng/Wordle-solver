@@ -1,0 +1,31 @@
+import java.util.ArrayList;
+
+public class WWord {
+    private String word;
+    public WWord(String word) {
+        this.word = word;
+    }
+    public ArrayList<String> splitW(String word){
+        ArrayList<String> charList = new ArrayList<>();
+        for (int i = 0; i < word.length(); i++) {
+            charList.add(String.valueOf(word.charAt(i)));
+        }
+        return charList;
+
+
+    }
+    public void removeWords(ArrayList<String> words, String wordToRemove) {
+        for(int i = 0; i < words.size()-1; i++) {
+            if(words.get(i).equalsIgnoreCase(wordToRemove)) {
+                words.remove(i);
+                i--; // Decrement index to account for the removed element
+            }
+        }
+    } 
+
+    public static void main(String[] args) {
+        WWord wWord = new WWord("hello");
+        ArrayList<String> charList = wWord.splitW("HELLO");
+        System.out.println(charList);
+    }
+}
