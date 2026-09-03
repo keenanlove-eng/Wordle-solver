@@ -1,9 +1,12 @@
+package Wordle;
 import java.util.ArrayList;
 
 public class WWord {
     private String word;
+    private String ans;
     public WWord(String word) {
         this.word = word;
+        ans="";
     }
     public ArrayList<String> splitW(String word){
         ArrayList<String> charList = new ArrayList<>();
@@ -11,11 +14,16 @@ public class WWord {
             charList.add(String.valueOf(word.charAt(i)));
         }
         return charList;
-
-
     }
+   
+
+    public void pickRandomWord(ArrayList<String> words) {
+        ans = words.get((int)(Math.random() * words.size()));
+        
+    }
+
     public void removeWords(ArrayList<String> words, String wordToRemove) {
-        for(int i = 0; i < words.size()-1; i++) {
+        for(int i = 0; i < words.size(); i++) {
             if(words.get(i).equalsIgnoreCase(wordToRemove)) {
                 words.remove(i);
                 i--; // Decrement index to account for the removed element
@@ -23,9 +31,26 @@ public class WWord {
         }
     } 
 
+    public ArrayList<String> wordChecker(String test){
+        ArrayList<String> result = new ArrayList<>();
+        for(int i = 0; i < test.length(); i++){
+            if(test.charAt(i) == ans.charAt(i)){
+                result.add("green");
+            } else if(ans.indexOf(test.charAt(i)) != -1){
+                result.add("yellow");
+            } else {
+                result.add("grey");
+            }
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) {
         WWord wWord = new WWord("hello");
         ArrayList<String> charList = wWord.splitW("HELLO");
         System.out.println(charList);
+        wWord.pickRandomWord(new ArrayList<String>(){{ add("world"); add("apple");}});
+        System.out.println(wWord.wordChecker("hello"));
     }
 }
