@@ -1,1 +1,1 @@
-Hi, I know this guy named Jhiz
+this is our wordle solver, henry has not been a huge help to the program ngl.
