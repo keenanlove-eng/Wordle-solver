@@ -34,14 +34,14 @@ public class WWord {
         return doubles;
     }
     public ArrayList<String> findTriples(String word){
-        ArrayList<String> triples = new ArrayList<>;
+        ArrayList<String> triples = new ArrayList<>();
         for(int i=0;i<word.length()-2;i++){
             for(int a=i+1;a<word.length()-1;a++){
                 for(int h=a+1;h<word.length();h++){
                     if(word.charAt(i)==word.charAt(a)& word.charAt(a)==word.charAt(h)){
                         String letter = String.valueOf(word.charAt(i));
                         if(!triples.contains(letter)){
-                            triples
+                            triples.add(letter); 
                         }
                     }
                 }
