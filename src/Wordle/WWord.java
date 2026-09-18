@@ -4,9 +4,15 @@ import java.util.ArrayList;
 public class WWord {
     private String word;
     private String ans;
+    private ArrayList<String> solutions;
+    private String guess;
     public WWord(String word) {
         this.word = word;
         this.ans = word;
+    }
+    public WWord(ArrayList<String> solutions, String guess) {
+        this.solutions = solutions;
+        this.guess = guess;
     }
     public ArrayList<String> splitW(String word){
         ArrayList<String> charList = new ArrayList<>();
@@ -106,8 +112,32 @@ public class WWord {
         return result;
     }
 
-    public ArrayList<String>[][] listShrinker(){
-        
+    /** Returns the candidate answers that match the supplied Wordle feedback. */
+    public ArrayList<String> listShrinker(ArrayList<String> pattern) {
+        ArrayList<String> result = new ArrayList<>();
+
+        if (solutions == null || solutions.isEmpty() || guess == null || pattern == null
+                || guess.length() != pattern.size()) {
+            return result;
+        }
+
+        ArrayList<String> normalizedPattern = new ArrayList<>();
+        for (String color : pattern) {
+            normalizedPattern.add(color == null ? null : color.toLowerCase());
+        }
+
+        for (String candidate : solutions) {
+            if (candidate == null || candidate.length() != guess.length()) {
+                continue;
+            }
+
+            ArrayList<String> candidatePattern = new WWord(candidate).wordChecker(guess);
+            if (candidatePattern.equals(normalizedPattern)) {
+                result.add(candidate);
+            }
+        }
+
+        return result;
     }
 
 
@@ -118,5 +148,16 @@ public class WWord {
         System.out.println("Exact match: " + wWord.wordChecker("lllaa"));
         System.out.println("Different guess: " + wWord.wordChecker("apple"));
         System.out.println("Current answer: " + wWord.ans);
+
+        ArrayList<String> solutions = new ArrayList<>();
+        solutions.add("cigar");
+        solutions.add("cider");
+        solutions.add("rebut");
+        String guess = "crane";
+        ArrayList<String> pattern = new WWord("cigar").wordChecker(guess);
+        System.out.println("Guess: " + guess + ", pattern: " + pattern);
+        WWord shrinker = new WWord(solutions, guess);
+        System.out.println("Matching solutions: "
+            + shrinker.listShrinker(pattern));
     }
 }
