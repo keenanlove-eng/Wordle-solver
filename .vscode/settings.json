@@ -13,5 +13,6 @@
     "editor.inlineSuggest.enabled": true,
     "liveshare.allowGuestTaskControl": true,
     "liveshare.allowGuestDebugControl": true,
-    "liveshare.languages.allowGuestCommandControl": true
+    "liveshare.languages.allowGuestCommandControl": true,
+    "java.debug.settings.onBuildFailureProceed": true
 }

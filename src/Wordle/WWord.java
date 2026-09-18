@@ -41,12 +41,13 @@ public class WWord {
                     if(word.charAt(i)==word.charAt(a)& word.charAt(a)==word.charAt(h)){
                         String letter = String.valueOf(word.charAt(i));
                         if(!triples.contains(letter)){
-                            triples.add(letter); 
+                            triples.add(letter);
                         }
                     }
                 }
             }
         }
+        return triples;
     }
 
 
