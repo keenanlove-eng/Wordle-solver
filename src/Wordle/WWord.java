@@ -106,6 +106,10 @@ public class WWord {
         return result;
     }
 
+    public ArrayList<String>[][] listShrinker(){
+        
+    }
+
 
     public static void main(String[] args) {
         WWord wWord = new WWord("hello");
