@@ -1,0 +1,17 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "editor.quickSuggestions": {
+        "comments": "on",
+        "strings": "on",
+        "other": "on"
+    },
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.inlineSuggest.enabled": true,
+    "liveshare.allowGuestTaskControl": true,
+    "liveshare.allowGuestDebugControl": true,
+    "liveshare.languages.allowGuestCommandControl": true
+}

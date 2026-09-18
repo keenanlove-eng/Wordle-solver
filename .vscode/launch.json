@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "WordSetSplitter",
+            "request": "launch",
+            "mainClass": "Wordle.WordSetSplitter",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
+            "name": "LinkedListAP",
+            "request": "launch",
+            "mainClass": "LinkedListAP",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
+            "name": "LinkedQueue",
+            "request": "launch",
+            "mainClass": "LinkedQueue",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
+            "name": "LinkedStack",
+            "request": "launch",
+            "mainClass": "LinkedStack",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
+            "name": "WWord",
+            "request": "launch",
+            "mainClass": "Wordle.WWord",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "jdk",
+            "request": "launch",
+            "name": "Launch Java App"
+        }
+    ]
+}
