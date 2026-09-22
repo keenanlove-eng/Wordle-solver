@@ -112,33 +112,6 @@ public class WWord {
         return result;
     }
 
-    /** Returns the candidate answers that match the supplied Wordle feedback. */
-    public ArrayList<String> listShrinker(ArrayList<String> pattern) {
-        ArrayList<String> result = new ArrayList<>();
-
-        if (solutions == null || solutions.isEmpty() || guess == null || pattern == null
-                || guess.length() != pattern.size()) {
-            return result;
-        }
-
-        ArrayList<String> normalizedPattern = new ArrayList<>();
-        for (String color : pattern) {
-            normalizedPattern.add(color == null ? null : color.toLowerCase());
-        }
-
-        for (String candidate : solutions) {
-            if (candidate == null || candidate.length() != guess.length()) {
-                continue;
-            }
-
-            ArrayList<String> candidatePattern = new WWord(candidate).wordChecker(guess);
-            if (candidatePattern.equals(normalizedPattern)) {
-                result.add(candidate);
-            }
-        }
-
-        return result;
-    }
 
 
     public static void main(String[] args) {
@@ -157,7 +130,5 @@ public class WWord {
         ArrayList<String> pattern = new WWord("cigar").wordChecker(guess);
         System.out.println("Guess: " + guess + ", pattern: " + pattern);
         WWord shrinker = new WWord(solutions, guess);
-        System.out.println("Matching solutions: "
-            + shrinker.listShrinker(pattern));
     }
 }
