@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Sets",
+            "request": "launch",
+            "mainClass": "Sets",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
             "name": "WordSetSplitter",
             "request": "launch",
             "mainClass": "Wordle.WordSetSplitter",
