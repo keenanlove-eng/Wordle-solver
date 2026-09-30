@@ -1,4 +1,3 @@
-package Wordle;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.*;
@@ -226,6 +225,37 @@ public class WWord {
                 || !new WWord(candidate).wordChecker(guess).equals(normalizedPattern));
     }
 
+    /** Filters candidates using the latest feedback, then returns the highest-scoring legal guess. */
+    public String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses) {
+        if (solutions == null || guess == null || pattern == null || legalGuesses == null
+                || guess.length() != pattern.size()) {
+            return null;
+        }
+
+        listShrinker(pattern);
+        if (solutions.isEmpty()) {
+            return null;
+        }
+
+        solutionwords = new ArrayList<>(solutions);
+        countLetters();
+
+        String bestGuess = null;
+        int bestScore = Integer.MIN_VALUE;
+        for (String candidateGuess : legalGuesses) {
+            if (candidateGuess == null || candidateGuess.length() != 5) {
+                continue;
+            }
+
+            int score = ScoreWord(candidateGuess);
+            if (score > bestScore) {
+                bestScore = score;
+                bestGuess = candidateGuess;
+            }
+        }
+        return bestGuess;
+    }
+
     
 
 
@@ -237,17 +267,33 @@ public class WWord {
        // System.out.println("Different guess: " + wWord.wordChecker("apple"));
        // System.out.println("Current answer: " + wWord.ans);
 
-        WWord wordLists = new WWord("cigar");
-        File solutionFile = new File("src/Wordle/WordleSolutionWords.txt");
+        WWord wordLists = new WWord("lxtxx");
+        File solutionFile = new File("WordleSolutionWords.txt");
         ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
-        String guess = "queue";
-        ArrayList<String> pattern = new WWord("quizz").wordChecker(guess);
-        System.out.println("Guess: " + guess + ", pattern: " + pattern);
-        WWord shrinker = new WWord(solutions, guess);
-        shrinker.listShrinker(pattern);
-        System.out.println("Matching solutions: " + solutions);
+        File legalFile = new File("WordleLegalWords.txt");
+        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
+        System.out.println("Loaded legal guesses: " + legalWords.size());
+        String guess = "slate";
+        for (int turn = 1; turn <= 5 && guess != null; turn++) {
+            ArrayList<String> pattern = wordLists.wordChecker(guess);
+            System.out.println("Guess " + turn + ": " + guess + ", result: " + pattern);
 
-        wordLists.printCounts();
-         
+            if (pattern.stream().allMatch("green"::equals)) {
+                System.out.println("Solved in " + turn + " guesses.");
+                System.out.println("Matching solution: " + guess);
+                break;
+            }
+
+            WWord round = new WWord(solutions, guess);
+            guess = round.getNextBestGuess(pattern, legalWords);
+            System.out.println("Matching solutions: " + solutions.size());
+
+            if (turn < 5 && guess != null) {
+                System.out.println("Next best guess: " + guess);
+            } else if (turn == 5) {
+                System.out.println("Matching solutions after five guesses: " + solutions);
+            }
+        }
+
     }
 }
