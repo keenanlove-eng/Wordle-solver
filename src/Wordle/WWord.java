@@ -1,19 +1,120 @@
 package Wordle;
 import java.util.ArrayList;
+import java.io.*;
+import java.util.*;
 
 public class WWord {
     private String word;
     private String ans;
-    private ArrayList<String> solutions;
+    public ArrayList<String> solutions;
     private String guess;
+    private ArrayList<String> legalwords;
+    private ArrayList<String> solutionwords;
+    private int[] letterCounts = new int[26];
+    private int[][] positionCounts = new int[5][26];
     public WWord(String word) {
         this.word = word;
         this.ans = word;
+        legalwords = new ArrayList<String>();
+        solutionwords = new ArrayList<String>();
     }
+
     public WWord(ArrayList<String> solutions, String guess) {
         this.solutions = solutions;
         this.guess = guess;
+        legalwords = new ArrayList<String>();
+        solutionwords = new ArrayList<String>();
     }
+
+    private void countLetters() {
+        letterCounts = new int[26];
+        positionCounts = new int[5][26];
+
+        for (String word : solutionwords) {
+            boolean[] seen = new boolean[26];
+            for (int i = 0; i < 5; i++) {
+                int c = Character.toLowerCase(word.charAt(i)) - 'a';
+                if (c < 0 || c >= 26) {
+                    continue;
+                }
+
+                positionCounts[i][c]++;
+                if (!seen[c]) {
+                    seen[c] = true;
+                    letterCounts[c]++;
+                }
+            }
+        }
+    }
+    public int ScoreWord(String word){
+        int score = 0;
+        boolean[]seen=new boolean[26];
+        for(int i=0;i<5;i++){
+            int c = Character.toLowerCase(word.charAt(i)) - 'a';
+            if(c<0||c>=26){
+                continue;
+            } 
+            score+=positionCounts[i][c];
+            if(!seen[c]){
+                seen[c]=true;
+                score+=letterCounts[c];
+            }
+        }
+        return score;
+    }
+
+    public void printCounts() {
+        for (int c = 0; c < 26; c++) {
+            if (letterCounts[c] == 0) {
+                continue;
+            }
+
+            char letter = (char) ('a' + c);
+            System.out.print(letter + " appears in " + letterCounts[c] + " words: ");
+            for (int position = 0; position < 5; position++) {
+                System.out.print(positionCounts[position][c]);
+                if (position < 4) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    public ArrayList<String> getLegalWords(File file)throws IOException{
+        legalwords = readWords(file);
+        return new ArrayList<>(legalwords);
+    }
+    public ArrayList<String> getSolutionWords(File file)throws IOException{
+        solutionwords = readWords(file);
+        countLetters();
+        return new ArrayList<>(solutionwords);
+    }
+
+    public ArrayList<String> getLegalWordList() {
+        return new ArrayList<>(legalwords);
+    }
+
+    public ArrayList<String> getSolutionWordList() {
+        return new ArrayList<>(solutionwords);
+    }
+
+    private ArrayList<String> readWords(File file) throws IOException {
+        ArrayList<String> words = new ArrayList<>();
+        try (Scanner input = new Scanner(file)) {
+            input.useDelimiter("[\\s,\\[\\]\"]+");
+            while (input.hasNext()) {
+                String nextWord = input.next().trim().toLowerCase();
+                if (nextWord.length() == 5 && !words.contains(nextWord)) {
+                    words.add(nextWord);
+                }
+            }
+        }
+        return words;
+    }
+    
+    
+    
     public ArrayList<String> splitW(String word){
         ArrayList<String> charList = new ArrayList<>();
         for (int i = 0; i < word.length(); i++) {
@@ -55,10 +156,6 @@ public class WWord {
         }
         return triples;
     }
-
-
-
-   
 
 
     public void removeWords(ArrayList<String> words, String wordToRemove) {
@@ -112,23 +209,45 @@ public class WWord {
         return result;
     }
 
+    /** Removes candidate answers that do not match the supplied Wordle feedback. */
+    public void listShrinker(ArrayList<String> pattern) {
+        if (solutions == null || solutions.isEmpty() || guess == null || pattern == null
+                || guess.length() != pattern.size()) {
+            return;
+        }
+
+        ArrayList<String> normalizedPattern = new ArrayList<>();
+        for (String color : pattern) {
+            normalizedPattern.add(color == null ? null : color.toLowerCase());
+        }
+
+        solutions.removeIf(candidate -> candidate == null
+                || candidate.length() != guess.length()
+                || !new WWord(candidate).wordChecker(guess).equals(normalizedPattern));
+    }
+
+    
 
 
-    public static void main(String[] args) {
-        WWord wWord = new WWord("hello");
-        ArrayList<String> charList = wWord.splitW("HELLO");
-        System.out.println(charList);
-        System.out.println("Exact match: " + wWord.wordChecker("lllaa"));
-        System.out.println("Different guess: " + wWord.wordChecker("apple"));
-        System.out.println("Current answer: " + wWord.ans);
+    public static void main(String[] args) throws IOException {
+       // WWord wWord = new WWord("hello");
+       // ArrayList<String> charList = wWord.splitW("HELLO");
+        // System.out.println(charList);
+       // System.out.println("Exact match: " + wWord.wordChecker("lllaa"));
+       // System.out.println("Different guess: " + wWord.wordChecker("apple"));
+       // System.out.println("Current answer: " + wWord.ans);
 
-        ArrayList<String> solutions = new ArrayList<>();
-        solutions.add("cigar");
-        solutions.add("cider");
-        solutions.add("rebut");
-        String guess = "crane";
-        ArrayList<String> pattern = new WWord("cigar").wordChecker(guess);
+        WWord wordLists = new WWord("cigar");
+        File solutionFile = new File("src/Wordle/WordleSolutionWords.txt");
+        ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
+        String guess = "queue";
+        ArrayList<String> pattern = new WWord("quizz").wordChecker(guess);
         System.out.println("Guess: " + guess + ", pattern: " + pattern);
         WWord shrinker = new WWord(solutions, guess);
+        shrinker.listShrinker(pattern);
+        System.out.println("Matching solutions: " + solutions);
+
+        wordLists.printCounts();
+        System.out.println("Score for 'word': " + wordLists.ScoreWord("slate"));
     }
 }

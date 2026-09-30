@@ -152,23 +152,28 @@ public class Sets<E> {
     }
 
     public static void main(String[] args) {
-        Sets<Integer> first = new Sets<>();
-        first.add(1);
-        first.add(2);
-        first.add(3);
+        Sets<String> fruits = new Sets<>();
+        System.out.println("Add apple: " + fruits.add("apple"));
+        System.out.println("Add banana: " + fruits.add("banana"));
+        System.out.println("Add cherry: " + fruits.add("cherry"));
+        System.out.println("Add duplicate apple: " + fruits.add("apple"));
+        System.out.println("Fruits: " + fruits);
+        System.out.println("Contains banana: " + fruits.contains("banana"));
+        System.out.println("Contains date: " + fruits.contains("date"));
+        System.out.println("Size: " + fruits.size());
+        System.out.println("Remove cherry: " + fruits.remove("cherry"));
+        System.out.println("After removal: " + fruits);
 
-        Sets<Integer> second = new Sets<>();
-        second.add(2);
-        second.add(3);
-        second.add(4);
+        Sets<String> otherFruits = new Sets<>();
+        otherFruits.add("banana");
+        otherFruits.add("date");
+        System.out.println("Union: " + fruits.union(otherFruits));
+        System.out.println("Intersection: " + fruits.intersection(otherFruits));
+        System.out.println("Difference: " + fruits.difference(otherFruits));
 
-        System.out.println("First: " + first);
-        System.out.println("Second: " + second);
-        System.out.println("Union: " + first.union(second));
-        System.out.println("Intersection: " + first.intersection(second));
-        System.out.println("Difference: " + first.difference(second));
-        System.out.println("Contains 2? " + first.contains(2));
-        System.out.println("Removed 3? " + first.remove(3));
-        System.out.println("Updated First: " + first);
+        for (String fruit : new String[] {"apple", "banana"}) {
+            fruits.remove(fruit);
+        }
+        System.out.println("Size after emptying: " + fruits.size());
     }
 }
