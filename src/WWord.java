@@ -1,5 +1,3 @@
-package Wordle;
-import java.util.ArrayList;
 import java.io.*;
 import java.util.*;
 
@@ -174,35 +172,34 @@ public class WWord {
             return result;
         }
 
+        String secret = ans.toLowerCase();
+        String guess = test.toLowerCase();
         int[] remaining = new int[26];
-        for (int i = 0; i < ans.length(); i++) {
-            char c = Character.toLowerCase(ans.charAt(i));
-            remaining[c - 'a']++;
-        }
 
-        for (int i = 0; i < test.length(); i++) {
-            char guessed = Character.toLowerCase(test.charAt(i));
-            char actual = Character.toLowerCase(ans.charAt(i));
-
-            if (guessed == actual) {
-                result.add("green");
-                remaining[guessed - 'a']--;
-            } else {
-                result.add("blank");
+        for (int i = 0; i < secret.length(); i++) {
+            char actual = secret.charAt(i);
+            if (actual >= 'a' && actual <= 'z') {
+                remaining[actual - 'a']++;
             }
         }
 
-        for (int i = 0; i < test.length(); i++) {
+        for (int i = 0; i < guess.length(); i++) {
+            result.add("grey");
+            if (guess.charAt(i) == secret.charAt(i)) {
+                result.set(i, "green");
+                remaining[guess.charAt(i) - 'a']--;
+            }
+        }
+
+        for (int i = 0; i < guess.length(); i++) {
             if (result.get(i).equals("green")) {
                 continue;
             }
 
-            char guessed = Character.toLowerCase(test.charAt(i));
-            if (remaining[guessed - 'a'] > 0 && ans.toLowerCase().indexOf(guessed) != -1) {
+            char guessed = guess.charAt(i);
+            if (guessed >= 'a' && guessed <= 'z' && remaining[guessed - 'a'] > 0) {
                 result.set(i, "yellow");
                 remaining[guessed - 'a']--;
-            } else {
-                result.set(i, "grey");
             }
         }
 
@@ -226,28 +223,140 @@ public class WWord {
                 || !new WWord(candidate).wordChecker(guess).equals(normalizedPattern));
     }
 
+    /** Filters candidates using the latest feedback, then returns the highest-scoring
+     * remaining candidate guess; if the remaining set is empty, it falls back to the legal list. */
+    public String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses) {
+        if (solutions == null || guess == null || pattern == null || legalGuesses == null
+                || guess.length() != pattern.size()) {
+            return null;
+        }
+
+        listShrinker(pattern);
+        if (solutions.isEmpty()) {
+            return null;
+        }
+
+        if (solutions.size() == 1) {
+            return solutions.get(0);
+        }
+
+        solutionwords = new ArrayList<>(solutions);
+        countLetters();
+
+        String bestGuess = null;
+        int bestScore = Integer.MIN_VALUE;
+        for (String candidateGuess : solutions) {
+            if (candidateGuess == null || candidateGuess.length() != 5) {
+                continue;
+            }
+
+            int score = ScoreWord(candidateGuess);
+            if (score > bestScore) {
+                bestScore = score;
+                bestGuess = candidateGuess;
+            }
+        }
+
+        if (bestGuess != null) {
+            return bestGuess;
+        }
+
+        for (String candidateGuess : legalGuesses) {
+            if (candidateGuess == null || candidateGuess.length() != 5) {
+                continue;
+            }
+
+            int score = ScoreWord(candidateGuess);
+            if (score > bestScore) {
+                bestScore = score;
+                bestGuess = candidateGuess;
+            }
+        }
+        return bestGuess;
+    }
+
     
 
 
     public static void main(String[] args) throws IOException {
-       // WWord wWord = new WWord("hello");
-       // ArrayList<String> charList = wWord.splitW("HELLO");
-        // System.out.println(charList);
-       // System.out.println("Exact match: " + wWord.wordChecker("lllaa"));
-       // System.out.println("Different guess: " + wWord.wordChecker("apple"));
-       // System.out.println("Current answer: " + wWord.ans);
 
-        WWord wordLists = new WWord("cigar");
-        File solutionFile = new File("src/Wordle/WordleSolutionWords.txt");
+       /*  WWord wordLists = new WWord("drone");
+        File solutionFile = new File("src/WordleSolutionWords.txt");
         ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
-        String guess = "queue";
-        ArrayList<String> pattern = new WWord("quizz").wordChecker(guess);
-        System.out.println("Guess: " + guess + ", pattern: " + pattern);
-        WWord shrinker = new WWord(solutions, guess);
-        shrinker.listShrinker(pattern);
-        System.out.println("Matching solutions: " + solutions);
+        File legalFile = new File("src/WordleLegalWords.txt");
+        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
+        System.out.println("Loaded legal guesses: " + legalWords.size());
+        String guess = "ariot";
+        for (int turn = 1; turn <= 5 && guess != null; turn++) {
+            ArrayList<String> pattern = wordLists.wordChecker(guess);
+            System.out.println("Guess " + turn + ": " + guess + ", result: " + pattern);
 
-        wordLists.printCounts();
-        System.out.println("Score for 'word': " + wordLists.ScoreWord("slate"));
+            if (pattern.stream().allMatch("green"::equals)) {
+                System.out.println("Solved in " + turn + " guesses.");
+                System.out.println("Matching solution: " + guess);
+                break;
+            }
+
+            WWord round = new WWord(solutions, guess);
+            guess = round.getNextBestGuess(pattern, legalWords);
+            System.out.println("Matching solutions: " + solutions.size());
+
+            if (turn < 5 && guess != null) {
+                System.out.println("Next best guess: " + guess);
+            } else if (turn == 5) {
+                System.out.println("Matching solutions after five guesses: " + solutions);
+            }
+        } 
+        */
+
+
+        WWord wordLists = new WWord("drone");
+        File solutionFile = new File("src/WordleSolutionWords.txt");
+        ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
+        File legalFile = new File("src/WordleLegalWords.txt");
+        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
+        System.out.println("Loaded legal guesses: " + legalWords.size());
+
+        int totalGuesses = 0;
+        int solvedWords = 0;
+        int unsolvedWords = 0;
+
+        for (String solution : solutions) {
+            WWord answer = new WWord(solution);
+            ArrayList<String> remainingSolutions = new ArrayList<>(solutions);
+            String guess = "salet";
+            int guessesForWord = 0;
+            boolean solved = false;
+
+            while (guess != null && guessesForWord < 6) {
+                guessesForWord++;
+                ArrayList<String> pattern = answer.wordChecker(guess);
+                if (pattern.stream().allMatch("green"::equals)) {
+                    totalGuesses += guessesForWord;
+                    solvedWords++;
+                    solved = true;
+                    break;
+                }
+
+                if (guessesForWord < 6) {
+                    WWord round = new WWord(remainingSolutions, guess);
+                    guess = round.getNextBestGuess(pattern, legalWords);
+                }
+            }
+
+            if (!solved) {
+                unsolvedWords++;
+                System.out.println("Unsolved word: " + solution);
+            }
+        }
+
+        System.out.println("Solved words: " + solvedWords);
+        System.out.println("Unsolved words: " + unsolvedWords);
+        if (solvedWords > 0) {
+            System.out.printf("Average guesses per solved word: %.2f%n",
+                    (double) totalGuesses / solvedWords);
+        }
+
+
     }
 }

@@ -1,4 +1,4 @@
-package Wordle;
+
 public class LetterCounter {
     private String[] text;
     
