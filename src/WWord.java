@@ -172,34 +172,35 @@ public class WWord {
             return result;
         }
 
-        String secret = ans.toLowerCase();
-        String guess = test.toLowerCase();
         int[] remaining = new int[26];
+        for (int i = 0; i < ans.length(); i++) {
+            char c = Character.toLowerCase(ans.charAt(i));
+            remaining[c - 'a']++;
+        }
 
-        for (int i = 0; i < secret.length(); i++) {
-            char actual = secret.charAt(i);
-            if (actual >= 'a' && actual <= 'z') {
-                remaining[actual - 'a']++;
+        for (int i = 0; i < test.length(); i++) {
+            char guessed = Character.toLowerCase(test.charAt(i));
+            char actual = Character.toLowerCase(ans.charAt(i));
+
+            if (guessed == actual) {
+                result.add("green");
+                remaining[guessed - 'a']--;
+            } else {
+                result.add("blank");
             }
         }
 
-        for (int i = 0; i < guess.length(); i++) {
-            result.add("grey");
-            if (guess.charAt(i) == secret.charAt(i)) {
-                result.set(i, "green");
-                remaining[guess.charAt(i) - 'a']--;
-            }
-        }
-
-        for (int i = 0; i < guess.length(); i++) {
+        for (int i = 0; i < test.length(); i++) {
             if (result.get(i).equals("green")) {
                 continue;
             }
 
-            char guessed = guess.charAt(i);
-            if (guessed >= 'a' && guessed <= 'z' && remaining[guessed - 'a'] > 0) {
+            char guessed = Character.toLowerCase(test.charAt(i));
+            if (remaining[guessed - 'a'] > 0 && ans.toLowerCase().indexOf(guessed) != -1) {
                 result.set(i, "yellow");
                 remaining[guessed - 'a']--;
+            } else {
+                result.set(i, "grey");
             }
         }
 
@@ -223,9 +224,13 @@ public class WWord {
                 || !new WWord(candidate).wordChecker(guess).equals(normalizedPattern));
     }
 
-    /** Filters candidates using the latest feedback, then returns the highest-scoring
-     * remaining candidate guess; if the remaining set is empty, it falls back to the legal list. */
+    /** Filters candidates using the latest feedback, then returns the highest-scoring legal guess. */
     public String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses) {
+        return getNextBestGuess(pattern, legalGuesses, null);
+        }
+
+        private String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses,
+            Map<String, String> guessCache) {
         if (solutions == null || guess == null || pattern == null || legalGuesses == null
                 || guess.length() != pattern.size()) {
             return null;
@@ -236,8 +241,13 @@ public class WWord {
             return null;
         }
 
-        if (solutions.size() == 1) {
-            return solutions.get(0);
+        String cacheKey = null;
+        if (guessCache != null) {
+            cacheKey = String.join(",", solutions);
+            String cachedGuess = guessCache.get(cacheKey);
+            if (cachedGuess != null) {
+                return cachedGuess;
+            }
         }
 
         solutionwords = new ArrayList<>(solutions);
@@ -245,22 +255,6 @@ public class WWord {
 
         String bestGuess = null;
         int bestScore = Integer.MIN_VALUE;
-        for (String candidateGuess : solutions) {
-            if (candidateGuess == null || candidateGuess.length() != 5) {
-                continue;
-            }
-
-            int score = ScoreWord(candidateGuess);
-            if (score > bestScore) {
-                bestScore = score;
-                bestGuess = candidateGuess;
-            }
-        }
-
-        if (bestGuess != null) {
-            return bestGuess;
-        }
-
         for (String candidateGuess : legalGuesses) {
             if (candidateGuess == null || candidateGuess.length() != 5) {
                 continue;
@@ -272,59 +266,22 @@ public class WWord {
                 bestGuess = candidateGuess;
             }
         }
+        if (guessCache != null && bestGuess != null) {
+            guessCache.put(cacheKey, bestGuess);
+        }
         return bestGuess;
     }
 
-    
-
-
-    public static void main(String[] args) throws IOException {
-
-       /*  WWord wordLists = new WWord("drone");
-        File solutionFile = new File("src/WordleSolutionWords.txt");
-        ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
-        File legalFile = new File("src/WordleLegalWords.txt");
-        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
-        System.out.println("Loaded legal guesses: " + legalWords.size());
-        String guess = "ariot";
-        for (int turn = 1; turn <= 5 && guess != null; turn++) {
-            ArrayList<String> pattern = wordLists.wordChecker(guess);
-            System.out.println("Guess " + turn + ": " + guess + ", result: " + pattern);
-
-            if (pattern.stream().allMatch("green"::equals)) {
-                System.out.println("Solved in " + turn + " guesses.");
-                System.out.println("Matching solution: " + guess);
-                break;
-            }
-
-            WWord round = new WWord(solutions, guess);
-            guess = round.getNextBestGuess(pattern, legalWords);
-            System.out.println("Matching solutions: " + solutions.size());
-
-            if (turn < 5 && guess != null) {
-                System.out.println("Next best guess: " + guess);
-            } else if (turn == 5) {
-                System.out.println("Matching solutions after five guesses: " + solutions);
-            }
-        } 
-        */
-
-
-        WWord wordLists = new WWord("drone");
-        File solutionFile = new File("src/WordleSolutionWords.txt");
-        ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
-        File legalFile = new File("src/WordleLegalWords.txt");
-        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
-        System.out.println("Loaded legal guesses: " + legalWords.size());
-
+    private static int[] simulateStartingWord(String startingWord,
+            ArrayList<String> solutions, ArrayList<String> legalWords) {
         int totalGuesses = 0;
-        int solvedWords = 0;
         int unsolvedWords = 0;
+        Map<String, String> guessCache = new HashMap<>();
 
         for (String solution : solutions) {
             WWord answer = new WWord(solution);
             ArrayList<String> remainingSolutions = new ArrayList<>(solutions);
-            String guess = "salet";
+            String guess = startingWord;
             int guessesForWord = 0;
             boolean solved = false;
 
@@ -332,31 +289,100 @@ public class WWord {
                 guessesForWord++;
                 ArrayList<String> pattern = answer.wordChecker(guess);
                 if (pattern.stream().allMatch("green"::equals)) {
-                    totalGuesses += guessesForWord;
-                    solvedWords++;
                     solved = true;
                     break;
                 }
 
                 if (guessesForWord < 6) {
                     WWord round = new WWord(remainingSolutions, guess);
-                    guess = round.getNextBestGuess(pattern, legalWords);
+                    guess = round.getNextBestGuess(pattern, legalWords, guessCache);
                 }
             }
 
-            if (!solved) {
+            if (solved) {
+                totalGuesses += guessesForWord;
+            } else {
+                totalGuesses += 6;
                 unsolvedWords++;
-                System.out.println("Unsolved word: " + solution);
             }
         }
 
-        System.out.println("Solved words: " + solvedWords);
-        System.out.println("Unsolved words: " + unsolvedWords);
-        if (solvedWords > 0) {
-            System.out.printf("Average guesses per solved word: %.2f%n",
-                    (double) totalGuesses / solvedWords);
+        return new int[] { totalGuesses, unsolvedWords };
+    }
+
+    public static void main(String[] args) throws IOException {
+       // WWord wWord = new WWord("hello");
+       // ArrayList<String> charList = wWord.splitW("HELLO");
+        // System.out.println(charList);
+       // System.out.println("Exact match: " + wWord.wordChecker("lllaa"));
+       // System.out.println("Different guess: " + wWord.wordChecker("apple"));
+       // System.out.println("Current answer: " + wWord.ans);
+
+        WWord wordLists = new WWord("shawn");
+        File solutionFile = new File("src/WordleSolutionWords.txt");
+        ArrayList<String> solutions = wordLists.getSolutionWords(solutionFile);
+        File legalFile = new File("src/WordleLegalWords.txt");
+        ArrayList<String> legalWords = wordLists.getLegalWords(legalFile);
+        System.out.println("Loaded legal guesses: " + legalWords.size());
+        ArrayList<String> startingWords = new ArrayList<>();
+        for (String legalWord : legalWords) {
+            int matchingLetters = 0;
+            for (char letter : "atsrle".toCharArray()) {
+                if (legalWord.indexOf(letter) >= 0) {
+                    matchingLetters++;
+                }
+            }
+            if (matchingLetters >= 2) {
+                startingWords.add(legalWord);
+            }
+        }
+        System.out.println("Starting words containing at least two distinct letters from a, t, s, r, l, e: "
+                + startingWords.size());
+        if (solutions.isEmpty() || startingWords.isEmpty()) {
+            System.out.println("No starting words or solutions to evaluate.");
+            return;
         }
 
+        int bestTotalGuesses = Integer.MAX_VALUE;
+        ArrayList<String> bestStartingWords = new ArrayList<>();
+        ArrayList<Integer> bestUnsolvedCounts = new ArrayList<>();
+        int startingWordLimit = startingWords.size();
+        if (args.length > 0) {
+            startingWordLimit = Math.min(startingWordLimit, Integer.parseInt(args[0]));
+        }
+
+        for (int i = 0; i < startingWordLimit; i++) {
+            String startingWord = startingWords.get(i);
+            int[] result = simulateStartingWord(startingWord, solutions, legalWords);
+
+            if (result[0] < bestTotalGuesses) {
+                bestTotalGuesses = result[0];
+                bestStartingWords.clear();
+                bestUnsolvedCounts.clear();
+                System.out.printf("Best so far: %s, average %.2f, unsolved %d%n",
+                        startingWord, (double) result[0] / solutions.size(), result[1]);
+                System.out.flush();
+            }
+            if (result[0] == bestTotalGuesses) {
+                bestStartingWords.add(startingWord);
+                bestUnsolvedCounts.add(result[1]);
+            }
+
+            if ((i + 1) % 100 == 0 || i + 1 == startingWordLimit) {
+                System.out.printf("Evaluated %d / %d starting words%n",
+                        i + 1, startingWordLimit);
+                System.out.flush();
+            }
+        }
+
+        System.out.printf("Lowest average guesses: %.2f%n",
+                (double) bestTotalGuesses / solutions.size());
+        System.out.println("Best starting words (unsolved out of " + solutions.size()
+                + " counted as 6 guesses):");
+        for (int i = 0; i < bestStartingWords.size(); i++) {
+            System.out.println(bestStartingWords.get(i) + " (unsolved: "
+                    + bestUnsolvedCounts.get(i) + ")");
+        }
 
     }
 }

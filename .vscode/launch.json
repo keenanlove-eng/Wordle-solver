@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "WordSetSplitter",
+            "request": "launch",
+            "mainClass": "WordSetSplitter",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
             "name": "WWord",
             "request": "launch",
             "mainClass": "WWord",

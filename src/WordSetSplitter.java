@@ -105,7 +105,7 @@ public class WordSetSplitter {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String fileName = "src/Wordle/WordleSolutionWords.txt";
+		String fileName = "src/WordleSolutionWords.txt";
 		if (args.length > 0) {
 			fileName = args[0];
 		}
