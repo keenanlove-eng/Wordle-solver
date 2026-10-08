@@ -153,7 +153,7 @@ public class Sets<E> {
 
     public static void main(String[] args) {
         Sets<String> fruits = new Sets<>();
-        System.out.println("Add apple: " + fruits.add("apple"));
+        System.out.println("Add strawberry: " + fruits.add("apple"));
         System.out.println("Add banana: " + fruits.add("banana"));
         System.out.println("Add cherry: " + fruits.add("cherry"));
         System.out.println("Add duplicate apple: " + fruits.add("apple"));
