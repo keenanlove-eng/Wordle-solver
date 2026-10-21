@@ -164,6 +164,7 @@ public class WWord {
             }
         }
     } 
+    
 
     public ArrayList<String> wordChecker(String test) {
         ArrayList<String> result = new ArrayList<>();
@@ -226,51 +227,75 @@ public class WWord {
 
     /** Filters candidates using the latest feedback, then returns the highest-scoring legal guess. */
     public String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses) {
-        return getNextBestGuess(pattern, legalGuesses, null);
+        if (pattern == null || guess == null || guess.length() != pattern.size()) {
+            return null;
+        }
+        listShrinker(pattern);
+        return findBestEliminator(legalGuesses);
     }
 
-    private String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses,
-            Map<String, String> guessCache) {
-        if (solutions == null || guess == null || pattern == null || legalGuesses == null
-                || guess.length() != pattern.size()) {
+
+
+    public String BestNext(ArrayList<String> pattern) {
+        if (pattern == null || guess == null || guess.length() != pattern.size()) {
             return null;
         }
-
         listShrinker(pattern);
-        if (solutions.isEmpty()) {
+        return findBestEliminator(legalwords);
+    }
+
+
+
+
+
+
+
+    public String findBestEliminator(ArrayList<String> legalGuesses) {
+        if (solutions == null || solutions.isEmpty() || legalGuesses == null || legalGuesses.isEmpty()) {
             return null;
+
         }
 
-        // The remaining answers determine the next best guess, so reuse it when possible.
-        String cacheKey = null;
-        if (guessCache != null) {
-            cacheKey = String.join(",", solutions);
-            String cachedGuess = guessCache.get(cacheKey);
-            if (cachedGuess != null) {
-                return cachedGuess;
-            }
-        }
+        String bestWord = null;
+        int maxWordsRemoved = 0;
 
-        solutionwords = new ArrayList<>(solutions);
-        countLetters();
-
-        String bestGuess = null;
-        int bestScore = Integer.MIN_VALUE;
         for (String candidateGuess : legalGuesses) {
             if (candidateGuess == null || candidateGuess.length() != 5) {
                 continue;
             }
 
-            int score = ScoreWord(candidateGuess);
-            if (score > bestScore) {
-                bestScore = score;
-                bestGuess = candidateGuess;
+            ArrayList<ArrayList<String>> feedbackPatterns = new ArrayList<>();
+            ArrayList<Integer> feedbackCounts = new ArrayList<>();
+            int validCandidates = 0;
+
+            for (String candidate : solutions) {
+                if (candidate == null || candidate.length() != 5) {
+                    continue;
+                }
+
+                ArrayList<String> feedback = new WWord(candidate).wordChecker(candidateGuess);
+                int patternIndex = feedbackPatterns.indexOf(feedback);
+                if (patternIndex == -1) {
+                    feedbackPatterns.add(feedback);
+                    feedbackCounts.add(1);
+                } else {
+                    feedbackCounts.set(patternIndex, feedbackCounts.get(patternIndex) + 1);
+                }
+                validCandidates++;
+            }
+
+            int largestBucket = 0;
+            for (int count : feedbackCounts) {
+                largestBucket = Math.max(largestBucket, count);
+            }
+            int wordsRemoved = validCandidates - largestBucket;
+            if (wordsRemoved > maxWordsRemoved) {
+                maxWordsRemoved = wordsRemoved;
+                bestWord = candidateGuess;
             }
         }
-        if (guessCache != null && bestGuess != null) {
-            guessCache.put(cacheKey, bestGuess);
-        }
-        return bestGuess;
+
+        return bestWord;
     }
 
     // Returns total guesses and unsolved answer count for one starting word.
@@ -301,12 +326,20 @@ public class WWord {
             }
 
             WWord round = new WWord(remainingSolutions, guess);
-            guess = round.getNextBestGuess(pattern, legalWords);
-            if (guess == null) {
+            round.listShrinker(pattern);
+            remainingSolutions = round.solutions;
+            if (remainingSolutions == null || remainingSolutions.isEmpty()) {
                 return -1;
             }
 
-            remainingSolutions = new ArrayList<>(round.solutions);
+            if (remainingSolutions.size() == 1) {
+                guess = remainingSolutions.get(0);
+            } else {
+                guess = round.findBestEliminator(legalWords);
+            }
+            if (guess == null) {
+                return -1;
+            }
         }
 
         return guesses;
@@ -331,10 +364,17 @@ public class WWord {
         String startingWord = "slate"; // Replace with your desired starting word
         int count = 0;
         int notSolved = 0;
+        int wordsdone = 0;
         for(int i = 0; i < solutions.size(); i++) {
             String ans = solutions.get(i);
             
             int guesses = new WWord("tests").game(ans, startingWord, solutions, legalWords);
+            wordsdone++;
+            System.out.println(wordsdone);
+            if(wordsdone % 100 == 0){
+                System.out.println("Average guesses so far: " + (double) count / wordsdone);
+                System.out.println("Not solved so far: " + notSolved);
+            }
             if (guesses == -1) {
                 System.out.println(ans + " with " + startingWord + ": not solved");
                 notSolved++;
@@ -353,3 +393,7 @@ public class WWord {
         
     }
 }
+
+
+
+
