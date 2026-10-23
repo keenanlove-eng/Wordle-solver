@@ -44,6 +44,7 @@ public class WWord {
             }
         }
     }
+    
     public int ScoreWord(String word){
         int score = 0;
         boolean[]seen=new boolean[26];
@@ -165,7 +166,7 @@ public class WWord {
         }
     } 
     
-
+    // checks if candidate word matches the answer and returns a list of colors representing the feedback
     public ArrayList<String> wordChecker(String test) {
         ArrayList<String> result = new ArrayList<>();
 
@@ -225,31 +226,7 @@ public class WWord {
                 || !new WWord(candidate).wordChecker(guess).equals(normalizedPattern));
     }
 
-    /** Filters candidates using the latest feedback, then returns the highest-scoring legal guess. */
-    public String getNextBestGuess(ArrayList<String> pattern, ArrayList<String> legalGuesses) {
-        if (pattern == null || guess == null || guess.length() != pattern.size()) {
-            return null;
-        }
-        listShrinker(pattern);
-        return findBestEliminator(legalGuesses);
-    }
-
-
-
-    public String BestNext(ArrayList<String> pattern) {
-        if (pattern == null || guess == null || guess.length() != pattern.size()) {
-            return null;
-        }
-        listShrinker(pattern);
-        return findBestEliminator(legalwords);
-    }
-
-
-
-
-
-
-
+// ends the game by finding the best eliminator word from the legal guesses based on the current solutions. It evaluates each legal guess against the remaining solutions and selects the one that maximizes the number of eliminated candidates.
     public String findBestEliminator(ArrayList<String> legalGuesses) {
         if (solutions == null || solutions.isEmpty() || legalGuesses == null || legalGuesses.isEmpty()) {
             return null;
@@ -345,12 +322,6 @@ public class WWord {
         return guesses;
     }
 
-    public int game(String answer, String startingWord) {
-        if (this.solutions == null || this.legalwords == null) {
-            return -1;
-        }
-        return game(answer, startingWord, this.solutions, this.legalwords);
-    }
 
     public static void main(String[] args) throws IOException {
 
@@ -367,19 +338,17 @@ public class WWord {
         int wordsdone = 0;
         for(int i = 0; i < solutions.size(); i++) {
             String ans = solutions.get(i);
-            
-            int guesses = new WWord("tests").game(ans, startingWord, solutions, legalWords);
             wordsdone++;
-            System.out.println(wordsdone);
-            if(wordsdone % 100 == 0){
-                System.out.println("Average guesses so far: " + (double) count / wordsdone);
-                System.out.println("Not solved so far: " + notSolved);
-            }
+            int guesses = new WWord("tests").game(ans, startingWord, solutions, legalWords);
             if (guesses == -1) {
                 System.out.println(ans + " with " + startingWord + ": not solved");
                 notSolved++;
                 continue;
             }
+            if(wordsdone % 150 == 0){
+                System.out.println("Average guesses: " + (double) count / i);
+            }
+            
             if(guesses!=-1){
                 count += guesses;
             }

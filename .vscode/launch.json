@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Binary",
+            "request": "launch",
+            "mainClass": "Binary",
+            "projectName": "Data Structures_30ecf43f"
+        },
+        {
+            "type": "java",
             "name": "WordSetSplitter",
             "request": "launch",
             "mainClass": "WordSetSplitter",
